@@ -16,8 +16,6 @@ This script automates the process of updating and maintaining an Ubuntu-based sy
     git clone https://github.com/your-username/update-system-script.git
     ```
 
-    Replace `your-username` with your GitHub username.
-
 3. Navigate into the cloned repository:
 
     ```bash

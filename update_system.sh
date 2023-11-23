@@ -15,5 +15,7 @@ sudo ubuntu-drivers autoinstall
 sudo apt autoremove -y
 sudo apt autoclean
 
+sudo snap refresh
+
 echo "System update and maintenance completed."
 

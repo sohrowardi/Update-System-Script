@@ -13,7 +13,7 @@ This script automates the process of updating and maintaining an Ubuntu-based sy
 2. Clone this repository using the following command:
 
     ```bash
-    https://github.com/sohrowardi/Update-System-Script
+    git clone https://github.com/sohrowardi/Update-System-Script
     ```
 
 3. Navigate into the cloned repository:

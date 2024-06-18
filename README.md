@@ -27,6 +27,10 @@ This script automates the process of updating and maintaining an Ubuntu-based sy
     ```bash
     chmod +x update_system.sh
     ```
+and
+    ```bash
+    chmod +x update_system_plus.sh
+    ```
 
 5. Run the script:
 

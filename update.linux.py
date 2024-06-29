@@ -9,10 +9,12 @@ LOGFILE = "/var/log/system_maintenance.log"
 logging.basicConfig(filename=LOGFILE, level=logging.INFO, format='%(asctime)s %(message)s')
 
 def log_error(message):
+    """Log an error message to the logfile and print it."""
     logging.error(message)
     print(f"Error: {message}")
 
 def run_command(command):
+    """Run a shell command and log its output or any errors."""
     try:
         result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         logging.info(result.stdout.decode())
@@ -21,12 +23,18 @@ def run_command(command):
         log_error(e.stderr.decode())
 
 def detect_distro():
+    """Detect the Linux distribution."""
     try:
         return distro.id().lower()
     except AttributeError:
-        return subprocess.check_output(['lsb_release', '-is'], text=True).strip().lower()
+        try:
+            return subprocess.check_output(['lsb_release', '-is'], text=True).strip().lower()
+        except subprocess.CalledProcessError as e:
+            log_error("Failed to detect Linux distribution.")
+            return "unknown"
 
 def update_system(distro):
+    """Update the system based on its distribution."""
     if distro in ["debian", "ubuntu", "mint"]:
         # Update for Debian-based systems
         run_command("sudo apt update")
@@ -51,6 +59,7 @@ def update_system(distro):
         log_error("Unsupported Linux distribution")
 
 def update_flatpak():
+    """Update Flatpak packages if Flatpak is installed."""
     if subprocess.run("command -v flatpak", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
         run_command("flatpak update -y")
         run_command("flatpak uninstall --unused -y")
@@ -59,6 +68,7 @@ def update_flatpak():
         logging.info("Flatpak not installed. Skipping Flatpak updates.")
 
 def update_snap():
+    """Update Snap packages if Snap is installed."""
     if subprocess.run("command -v snap", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
         run_command("sudo snap refresh")
         run_command("sudo snap remove --purge $(sudo snap list --all | awk '/disabled/{print $1, $3}')")
@@ -66,15 +76,8 @@ def update_snap():
         print("Snap not installed. Skipping Snap updates.")
         logging.info("Snap not installed. Skipping Snap updates.")
 
-def main():
-    distro = detect_distro()
-    logging.info(f"Detected distribution: {distro}")
-    print(f"Detected distribution: {distro}")
-
-    update_system(distro)
-    update_flatpak()
-    update_snap()
-
+def perform_additional_tasks(distro):
+    """Perform additional maintenance tasks based on the distribution."""
     if distro in ["debian", "ubuntu", "mint"]:
         run_command("sudo apt-get dist-upgrade -y")  # For Debian-based systems
 
@@ -91,6 +94,21 @@ def main():
     if os.path.isfile("/var/run/reboot-required"):
         logging.info("A system reboot is required. Run 'sudo reboot' to restart.")
         print("A system reboot is required. Run 'sudo reboot' to restart.")
+
+def main():
+    """Main function to run system maintenance tasks."""
+    if os.geteuid() != 0:
+        print("This script must be run as root. Please use sudo.")
+        return
+
+    distro = detect_distro()
+    logging.info(f"Detected distribution: {distro}")
+    print(f"Detected distribution: {distro}")
+
+    update_system(distro)
+    update_flatpak()
+    update_snap()
+    perform_additional_tasks(distro)
 
     logging.info("System update and maintenance completed.")
     print("System update and maintenance completed.")

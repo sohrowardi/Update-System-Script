@@ -2,6 +2,7 @@ import subprocess
 import platform
 import os
 import logging
+import distro  # Newer package for Linux distribution detection
 
 # Set up logging
 LOGFILE = "/var/log/system_maintenance.log"
@@ -21,8 +22,7 @@ def run_command(command):
 
 def detect_distro():
     try:
-        distro_info = platform.linux_distribution()
-        return distro_info[0].lower()
+        return distro.id().lower()
     except AttributeError:
         return subprocess.check_output(['lsb_release', '-is'], text=True).strip().lower()
 
@@ -75,8 +75,8 @@ def main():
     update_flatpak()
     update_snap()
 
-    # Additional maintenance tasks
-    run_command("sudo apt-get dist-upgrade -y")  # For Debian-based systems
+    if distro in ["debian", "ubuntu", "mint"]:
+        run_command("sudo apt-get dist-upgrade -y")  # For Debian-based systems
 
     # Check for security updates
     run_command("sudo unattended-upgrade --dry-run")
@@ -89,8 +89,8 @@ def main():
 
     # Check if a reboot is required
     if os.path.isfile("/var/run/reboot-required"):
-        logging.info("A system reboot is required.")
-        print("A system reboot is required.")
+        logging.info("A system reboot is required. Run 'sudo reboot' to restart.")
+        print("A system reboot is required. Run 'sudo reboot' to restart.")
 
     logging.info("System update and maintenance completed.")
     print("System update and maintenance completed.")

@@ -16,12 +16,28 @@ def log_error(message):
 def run_command(command):
     """Run a shell command and log its output or any errors."""
     try:
-        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output = result.stdout.decode().strip()
-        logging.info(output)
-        print(output)
+        # Use subprocess.Popen to get real-time output
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        
+        # Print stdout line by line
+        for line in process.stdout:
+            print(line.strip())
+            logging.info(line.strip())
+        
+        # Print stderr (if any)
+        for line in process.stderr:
+            log_error(line.strip())
+        
+        # Wait for the process to terminate
+        process.wait()
+        
+        # Check the return code
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, command)
+            
     except subprocess.CalledProcessError as e:
-        log_error(e.stderr.decode())
+        log_error(e.stderr)
+        raise e
 
 def detect_distro():
     """Detect the Linux distribution.

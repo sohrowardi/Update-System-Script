@@ -24,7 +24,12 @@ def run_command(command):
         log_error(e.stderr.decode())
 
 def detect_distro():
-    """Detect the Linux distribution."""
+    """Detect the Linux distribution.
+
+    Returns:
+        str: The name of the detected Linux distribution in lowercase.
+             If detection fails, returns 'unknown'.
+    """
     try:
         return distro.id().lower()
     except AttributeError:
@@ -35,7 +40,14 @@ def detect_distro():
             return "unknown"
 
 def update_system(distro):
-    """Update the system based on its distribution."""
+    """Update the system based on its distribution.
+
+    Args:
+        distro (str): The detected Linux distribution name.
+
+    Raises:
+        ValueError: If the distribution is not supported.
+    """
     if distro in ["debian", "ubuntu", "mint"]:
         # Update for Debian-based systems
         run_command("sudo apt update")
@@ -57,7 +69,8 @@ def update_system(distro):
         run_command("sudo zypper update -y")
         run_command("sudo zypper clean -a")
     else:
-        log_error("Unsupported Linux distribution")
+        raise ValueError("Unsupported Linux distribution: {}".format(distro))
+
 
 def update_flatpak():
     """Update Flatpak packages if Flatpak is installed."""

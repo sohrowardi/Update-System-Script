@@ -17,8 +17,9 @@ def run_command(command):
     """Run a shell command and log its output or any errors."""
     try:
         result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        logging.info(result.stdout.decode())
-        print(result.stdout.decode())
+        output = result.stdout.decode().strip()
+        logging.info(output)
+        print(output)
     except subprocess.CalledProcessError as e:
         log_error(e.stderr.decode())
 
@@ -64,8 +65,8 @@ def update_flatpak():
         run_command("flatpak update -y")
         run_command("flatpak uninstall --unused -y")
     else:
+        log_error("Flatpak not installed. Skipping Flatpak updates.")
         print("Flatpak not installed. Skipping Flatpak updates.")
-        logging.info("Flatpak not installed. Skipping Flatpak updates.")
 
 def update_snap():
     """Update Snap packages if Snap is installed."""
@@ -73,8 +74,8 @@ def update_snap():
         run_command("sudo snap refresh")
         run_command("sudo snap remove --purge $(sudo snap list --all | awk '/disabled/{print $1, $3}')")
     else:
+        log_error("Snap not installed. Skipping Snap updates.")
         print("Snap not installed. Skipping Snap updates.")
-        logging.info("Snap not installed. Skipping Snap updates.")
 
 def perform_additional_tasks(distro):
     """Perform additional maintenance tasks based on the distribution."""
@@ -92,8 +93,9 @@ def perform_additional_tasks(distro):
 
     # Check if a reboot is required
     if os.path.isfile("/var/run/reboot-required"):
-        logging.info("A system reboot is required. Run 'sudo reboot' to restart.")
-        print("A system reboot is required. Run 'sudo reboot' to restart.")
+        message = "A system reboot is required. Run 'sudo reboot' to restart."
+        logging.info(message)
+        print(message)
 
 def main():
     """Main function to run system maintenance tasks."""

@@ -2,7 +2,7 @@ import subprocess
 import platform
 import os
 import logging
-import distro  # Newer package for Linux distribution detection
+import distro  # Ensure this module is installed and imported
 
 # Set up logging
 LOGFILE = "/var/log/system_maintenance.log"
@@ -17,27 +17,22 @@ def run_command(command):
     """Run a shell command and log its output or any errors."""
     try:
         # Use subprocess.Popen to get real-time output
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        
-        # Print stdout line by line
-        for line in process.stdout:
-            print(line.strip())
-            logging.info(line.strip())
-        
-        # Print stderr (if any)
-        for line in process.stderr:
-            log_error(line.strip())
-        
-        # Wait for the process to terminate
-        process.wait()
-        
-        # Check the return code
-        if process.returncode != 0:
-            raise subprocess.CalledProcessError(process.returncode, command)
+        with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as process:
+            # Print stdout line by line
+            for line in process.stdout:
+                print(line.strip())
+                logging.info(line.strip())
             
-    except subprocess.CalledProcessError as e:
-        log_error(e.stderr)
-        raise e
+            # Print stderr (if any)
+            for line in process.stderr:
+                log_error(line.strip())
+            
+            # Wait for the process to terminate and check the return code
+            process.wait()
+            if process.returncode != 0:
+                log_error(f"Command '{command}' failed with return code {process.returncode}")
+    except Exception as e:
+        log_error(f"Exception occurred while running command '{command}': {str(e)}")
 
 def detect_distro():
     """Detect the Linux distribution.

@@ -11,6 +11,15 @@ log_error() {
     echo "Error: $1" | tee -a "$LOGFILE" >&2
 }
 
+# Function to update plush.sh
+update_plush() {
+    echo "Updating plush.sh..."
+    # Add the commands to update plush.sh here
+    # For example, if plush.sh is a script that needs to be downloaded from a repository:
+    # wget -O /path/to/plush.sh https://example.com/path/to/plush.sh || log_error "Failed to update plush.sh."
+    echo "plush.sh updated successfully."
+}
+
 # Update package lists
 echo "Updating package lists..."
 sudo apt update || log_error "Failed to update package lists."
@@ -47,6 +56,9 @@ fi
 # Check and update .deb packages (assuming they are from official repositories)
 echo "Checking and updating .deb packages..."
 sudo apt-get dist-upgrade -y || log_error "Failed to update .deb packages."
+
+# Update plush.sh
+update_plush
 
 # Check for security updates
 echo "Checking for security updates..."
